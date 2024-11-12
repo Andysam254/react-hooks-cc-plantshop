@@ -3,6 +3,8 @@ import React, { useState } from "react";
 function PlantCard({ deletePlant, id, image, name, price, updatePlant }) {
   const [inStock, setInStock] = useState(true);
   const [priceInput, setPriceInput] = useState(price);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [message, setMessage] = useState("");
 
   const toggleStock = () => setInStock(!inStock);
 
@@ -15,9 +17,21 @@ function PlantCard({ deletePlant, id, image, name, price, updatePlant }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!isNaN(priceInput) && priceInput > 0) {
-      updatePlant(id, { price: parseFloat(priceInput) });
+      setIsUpdating(true);
+      updatePlant(id, { price: parseFloat(priceInput) })
+        .then(() => {
+          setIsUpdating(false);
+          setMessage("Price updated successfully!");
+          setTimeout(() => setMessage(""), 3000); // Clear message after 3 seconds
+        })
+        .catch(() => {
+          setIsUpdating(false);
+          setMessage("Failed to update price. Please try again.");
+          setTimeout(() => setMessage(""), 3000); // Clear message after 3 seconds
+        });
     } else {
-      alert("Please enter a valid price.");
+      setMessage("Please enter a valid price.");
+      setTimeout(() => setMessage(""), 3000); // Clear message after 3 seconds
     }
   };
 
@@ -36,8 +50,11 @@ function PlantCard({ deletePlant, id, image, name, price, updatePlant }) {
             value={priceInput}
             className="price-input"
           />
-          <button type="submit">Update</button>
+          <button type="submit" disabled={isUpdating}>
+            {isUpdating ? "Updating..." : "Update"}
+          </button>
         </form>
+        {message && <p className="message">{message}</p>}
       </div>
       <div className="row">
         <button
